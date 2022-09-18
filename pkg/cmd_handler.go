@@ -32,7 +32,7 @@ func Run(args *ProgramArguments) (string, error) {
 	totalBytes := getTotalBytes(args)
 	speed := calculateSpeed(totalBytes, since.Seconds())
 
-	return fmt.Sprintf("Disk Write Speed: %s/s Elapsed Time: %f Total Written Bytes: %d\n", humanize.Bytes(speed), since.Seconds(), totalBytes), nil
+	return fmt.Sprintf("Disk Write Speed: %s/s Elapsed Time: %fs Total Written Data Size: %s\n", humanize.Bytes(speed), since.Seconds(), humanize.Bytes(totalBytes)), nil
 }
 
 func getTotalBytes(args *ProgramArguments) uint64 {
