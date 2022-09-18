@@ -16,7 +16,7 @@ func Run(args *ProgramArguments) (string, error) {
 	defer func() {
 		removeTestFile(args)
 	}()
-	fmt.Printf("Starting with %s\n", args.String())
+	fmt.Printf("Starting with %s ...\n", args.String())
 
 	_ = exec.Command("echo", "3 > /proc/sys/vm/drop_caches").Run()
 
