@@ -7,8 +7,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -32,43 +30,24 @@ func Run(args *ProgramArguments) (string, error) {
 		return "", err
 	}
 
-	stderrResults := getAndPrintStdErrResult(stderr)
+	printStdErrResult(stderr)
 
 	since := time.Since(start)
 
-	bytes, err := getTotalBytes(stderrResults)
-	if err != nil {
-		return "", err
-	}
-
-	speed := calculateSpeed(bytes, since.Seconds())
+	speed := calculateSpeed(getTotalBytes(args), since.Seconds())
 
 	return fmt.Sprintf("Disk Write Speed: %s/s\n", humanize.Bytes(speed)), nil
 }
 
-func getAndPrintStdErrResult(stderr io.ReadCloser) []string {
-	stderrResults := make([]string, 0)
+func printStdErrResult(stderr io.ReadCloser) {
 	scanner := bufio.NewScanner(stderr)
 	for scanner.Scan() {
 		fmt.Println(scanner.Text())
-		stderrResults = append(stderrResults, scanner.Text())
 	}
-	return stderrResults
 }
 
-func getTotalBytes(results []string) (uint64, error) {
-	actualResult := ""
-	for _, k := range results {
-		if strings.Contains(k, "transferred in") {
-			actualResult = k
-		}
-	}
-	bytesAsStr := strings.TrimSpace(strings.Split(actualResult, "bytes ")[0])
-	bytes, err := strconv.ParseUint(bytesAsStr, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	return bytes, nil
+func getTotalBytes(args *ProgramArguments) uint64 {
+	return uint64((args.BlockSize * 1000) * args.Count)
 }
 
 func calculateSpeed(bytes uint64, sinceAsSeconds float64) uint64 {
