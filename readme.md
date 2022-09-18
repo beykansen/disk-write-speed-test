@@ -18,7 +18,7 @@ Options:
 
 ```
 
-If you measure disk read speed, you can use ```hdparm``` tool.
+If you also want measure disk read speed, you can use ```hdparm``` tool.
 ```bash
 sudo hdparm -Tt /dev/sda1
 ```
