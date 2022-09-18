@@ -6,3 +6,4 @@ coverage.out
 coverage.out.tmp
 report.xml
 disk-write-speed-test
+builds/
