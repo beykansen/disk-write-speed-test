@@ -1,9 +1,8 @@
 package pkg
 
 import (
-	"bufio"
+	"errors"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -13,24 +12,20 @@ import (
 )
 
 func Run(args *ProgramArguments) (string, error) {
+	removeTestFile(args)
 	defer func() {
-		if err := os.Remove(args.TestFilePath); err != nil {
-			log.Printf("Failed to remove test file %s because of %s. Please manually remove it.", args.TestFilePath, err.Error())
-		}
+		removeTestFile(args)
 	}()
+
+	_ = exec.Command("echo", "3 > /proc/sys/vm/drop_caches").Run()
+
 	start := time.Now()
-
-	cmd := exec.Command("dd", "if=/dev/zero", fmt.Sprintf("of=%s", args.TestFilePath), "conv=sync", fmt.Sprintf("bs=%dk", args.BlockSize), fmt.Sprintf("count=%d", args.Count))
-	stderr, _ := cmd.StderrPipe()
-	defer func() {
-		_ = stderr.Close()
-	}()
-
-	if err := cmd.Start(); err != nil {
+	cmd := exec.Command("dd", "if=/dev/zero", fmt.Sprintf("of=%s", args.TestFilePath), "conv=fsync", fmt.Sprintf("bs=%dk", args.BlockSize), fmt.Sprintf("count=%d", args.Count))
+	out, err := cmd.Output()
+	if err != nil {
 		return "", err
 	}
-
-	printStdErrResult(stderr)
+	fmt.Println(string(out))
 
 	since := time.Since(start)
 
@@ -39,17 +34,18 @@ func Run(args *ProgramArguments) (string, error) {
 	return fmt.Sprintf("Disk Write Speed: %s/s\n", humanize.Bytes(speed)), nil
 }
 
-func printStdErrResult(stderr io.ReadCloser) {
-	scanner := bufio.NewScanner(stderr)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-}
-
 func getTotalBytes(args *ProgramArguments) uint64 {
 	return uint64((args.BlockSize * 1000) * args.Count)
 }
 
 func calculateSpeed(bytes uint64, sinceAsSeconds float64) uint64 {
 	return uint64(float64(bytes) / sinceAsSeconds)
+}
+
+func removeTestFile(args *ProgramArguments) {
+	if _, err := os.Stat(args.TestFilePath); !errors.Is(err, os.ErrNotExist) {
+		if err := os.Remove(args.TestFilePath); err != nil {
+			log.Printf("Failed to remove test file %s because of %s. Please manually remove it.", args.TestFilePath, err.Error())
+		}
+	}
 }
