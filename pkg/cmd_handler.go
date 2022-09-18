@@ -16,22 +16,23 @@ func Run(args *ProgramArguments) (string, error) {
 	defer func() {
 		removeTestFile(args)
 	}()
+	fmt.Printf("Starting with %s\n", args.String())
 
 	_ = exec.Command("echo", "3 > /proc/sys/vm/drop_caches").Run()
 
 	start := time.Now()
 	cmd := exec.Command("dd", "if=/dev/zero", fmt.Sprintf("of=%s", args.TestFilePath), "conv=fsync", fmt.Sprintf("bs=%dk", args.BlockSize), fmt.Sprintf("count=%d", args.Count))
-	out, err := cmd.Output()
+	_, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(string(out))
 
 	since := time.Since(start)
 
-	speed := calculateSpeed(getTotalBytes(args), since.Seconds())
+	totalBytes := getTotalBytes(args)
+	speed := calculateSpeed(totalBytes, since.Seconds())
 
-	return fmt.Sprintf("Disk Write Speed: %s/s\n", humanize.Bytes(speed)), nil
+	return fmt.Sprintf("Disk Write Speed: %s/s Elapsed Time: %f Total Written Bytes: %d\n", humanize.Bytes(speed), since.Seconds(), totalBytes), nil
 }
 
 func getTotalBytes(args *ProgramArguments) uint64 {

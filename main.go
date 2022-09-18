@@ -11,7 +11,6 @@ import (
 func main() {
 	args := new(pkg.ProgramArguments)
 	arg.MustParse(args)
-	fmt.Printf("Running with %s\n", args.String())
 
 	speedResult, err := pkg.Run(args)
 	if err != nil {

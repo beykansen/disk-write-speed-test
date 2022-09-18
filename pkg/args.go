@@ -9,5 +9,5 @@ type ProgramArguments struct {
 }
 
 func (p *ProgramArguments) String() string {
-	return fmt.Sprintf("Block Size: %d Count: %d File Path %s", p.BlockSize, p.Count, p.TestFilePath)
+	return fmt.Sprintf("Block Size: %d Count: %d File Path: %s", p.BlockSize, p.Count, p.TestFilePath)
 }
