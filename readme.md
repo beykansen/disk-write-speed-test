@@ -17,3 +17,8 @@ Options:
   --help, -h             display this help and exit
 
 ```
+
+If you measure disk read speed, you can use ```hdparm``` tool.
+```bash
+sudo hdparm -Tt /dev/sda1
+```
